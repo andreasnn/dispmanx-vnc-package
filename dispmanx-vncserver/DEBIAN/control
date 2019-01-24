@@ -1,0 +1,11 @@
+Source: dispmanx-vncserver
+Version: 2019-1
+Maintainer: Andreas Natanael Nielsen <andreas@fides.dk>
+Package: dispmanx-vncserver
+Architecture: armhf
+Installed-Size: 89
+Depends: libvncserver1, libconfig++9v5
+Section: graphics
+Priority: optional
+Homepage: https://github.com/osmc/dispmanx_vnc
+Description: VNC Server for OSMC using dispmanx
