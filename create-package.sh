@@ -1,16 +1,37 @@
+#!/usr/bin/env bash
+
+project_dir=`pwd`
 version=2019-1
 
-
-function chroot()
+function host_install_packages()
 {
-	chroot=~/Downloads/filesystem
+	sudo apt-get update
+	sudo apt-get -y upgrade
+	sudo apt-get -y install git qemu-user-static vim
+}
+
+function host_build_filesystem()
+{
+	git clone https://github.com/osmc/osmc.git
+	cd osmc/filesystem/osmc-rbp2-filesystem
+	sudo \. build.sh
+
+	cd $project_dir
+	tar -xpvf osmc/filesystem/osmc-rbp2-filesystem/*.tar.xz -C filesystem
+}
+
+function host_start_chroot()
+{
+	chroot=filesystem
+
+	sudo cp /usr/bin/qemu-arm-static $chroot/usr/bin
+	sudo cp /etc/resolv.conf $chroot/etc
 
 	mkdir $chroot/share
 	sudo mount -o bind . $chroot/share
 	sudo mount -o bind /dev $chroot/dev
 
-	# Network setup
-	sudo cp /etc/resolv.conf $chroot/etc
+	#chmod 777 $chroot/tmp
 
 	sudo chroot $chroot /bin/bash /share/create-package.sh
 
@@ -18,7 +39,7 @@ function chroot()
 	sudo umount $chroot/share
 }
 
-function install_packages()
+function chroot_install_packages()
 {
 	# Install needed packages
 	apt-get update
@@ -26,7 +47,7 @@ function install_packages()
 	apt-get install -y build-essential rbp-userland-dev-osmc libvncserver-dev libconfig++-dev
 }
 
-function compile_dispmanx()
+function chroot_build_dispmanx_package()
 {
 	cd /share
 
@@ -38,10 +59,7 @@ function compile_dispmanx()
 
 	# Copy bin file to bin folder
 	mv dispmanx_vnc/dispmanx_vncserver dispmanx-vncserver/usr/bin
-}
 
-function build_package()
-{
 	# Create the package
 	dpkg-deb --build dispmanx-vncserver dispmanx-vncserver_$version.deb
 
@@ -54,9 +72,10 @@ ischroot
 
 if [ $? == 1 ]
 then
-	chroot
+	host_install_packages
+	host_build_filesystem
+	host_start_chroot
 else
-	install_packages
-	compile_dispmanx
-	build_package
+	chroot_install_packages
+	chroot_build_dispmanx_package
 fi
