@@ -1,0 +1,11 @@
+
+# Vagrant
+.vagrant/
+Vagrantfile
+
+# OSMC extracted filesystem
+filesystem
+
+# Other Git repos
+osmc
+dispmanx_vnc
